@@ -39,12 +39,26 @@ app.post("/api/users/:id", async (req, res) => {
   return res.json(users);
 });
 
+// User friends
 app.post("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
 
   const user = await User.findOne({ _id: userId });
   user.friends.push(friendId);
   user.save();
+  return res.json(user);
+});
+
+app.delete("/api/users/:userId/friends/:friendId", async (req, res) => {
+  const { userId, friendId } = req.params;
+
+  const user = await User.findOne({ _id: userId });
+  const removeFriend = user.friends.filter((id) => {
+    return id != friendId;
+  });
+  user.friends = removeFriend;
+  user.save();
+
   return res.json(user);
 });
 
