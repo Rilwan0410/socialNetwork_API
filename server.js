@@ -81,6 +81,22 @@ app.get("/api/thoughts/:id", async (req, res) => {
   return res.json(singleThought);
 });
 
+app.post("/api/thoughts/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { thoughtText } = req.body;
+
+  const user = await User.findOne({ _id: userId });
+
+  const newThought = await Thought.create({
+    thoughtText,
+    username: user.username,
+  });
+
+  user.thoughts.push(newThought._id);
+  user.save();
+  return res.json({ user, newThought });
+});
+
 //==================================================================================================================================================
 app.listen(PORT, () => {
   console.log(`now listening on port ${PORT}`);
