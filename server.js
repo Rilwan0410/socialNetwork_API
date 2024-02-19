@@ -23,9 +23,14 @@ app.get("/api/users", async (req, res) => {
 });
 
 // Users
-app.get("/api/users", async (req, res) => {
-  const { username, email } = req.body;
-  const users = await User.create({ username, email })
+app.post("/api/users", async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    const newUser = await User.create({ username, email });
+    return res.json(newUser);
+  } catch (e) {
+    res.status(404).json({ message: e.message });
+  }
 });
 
 app.post("/api/users/:id", async (req, res) => {
