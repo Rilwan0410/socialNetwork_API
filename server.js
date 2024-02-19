@@ -9,12 +9,6 @@ const { Thought, Reaction } = require("./models/Thoughts");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  //   const thought = await Thought.create({ thoughtText: "I like coding" , username:'rilwan410'});
-  //   console.log(thought);
-
-  return res.send("<h1>Hello World</h1>");
-});
 
 // Users
 app.get("/api/users", async (req, res) => {
@@ -121,7 +115,7 @@ app.put("/api/thoughts/:id", async (req, res) => {
   return res.json(updatedThought);
 });
 
-app.delete("/api/users/:userId/thoughts/:thoughtId", async (req, res) => {
+app.delete("/api/thoughts/:thoughtId/users/:userId", async (req, res) => {
   const { userId, thoughtId } = req.params;
 
   const user = await User.findOne({ _id: userId });
@@ -135,6 +129,18 @@ app.delete("/api/users/:userId/thoughts/:thoughtId", async (req, res) => {
 });
 
 // Reactions to Thoughts
+app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
+    const { thoughtId } = req.params;
+    const { reactionBody, username } = req.body;
+    const thought = await Thought.findOne({ _id: thoughtId });
+  
+    const newReaction = await Reaction.create({ username, reactionBody });
+    thought.reactions.push(newReaction);
+    thought.save();
+  
+    res.json(thought);
+  }); 
+
 app.delete(
   "/api/thoughts/:thoughtId/reactions/:reactionId",
   async (req, res) => {
@@ -152,17 +158,6 @@ app.delete(
   }
 );
 
-app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
-  const { thoughtId } = req.params;
-  const { reactionBody, username } = req.body;
-  const thought = await Thought.findOne({ _id: thoughtId });
-
-  const newReaction = await Reaction.create({ username, reactionBody });
-  thought.reactions.push(newReaction);
-  thought.save();
-
-  res.json(thought);
-});
 
 //==================================================================================================================================================
 app.listen(PORT, () => {

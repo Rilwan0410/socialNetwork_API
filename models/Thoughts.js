@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const dayjs = require("dayjs");
 
 const reactionSchema = mongoose.Schema({
   reactionId: {
@@ -16,9 +17,15 @@ const reactionSchema = mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: () => new Date(),
+    default: () => dayjs(),
   },
 });
+
+// function formatDate(date) {
+//   return `${dayjs(date).format("MMM DD, YYYY")} at ${dayjs().format(
+//     "hh:mm a"
+//   )}`;
+// }
 
 const thoughtsSchema = mongoose.Schema(
   {
@@ -29,8 +36,8 @@ const thoughtsSchema = mongoose.Schema(
       maxlength: 280,
     },
     createdAt: {
-      type: Date,
-      default: () => new Date(),
+      type: String,
+      default: new Date(),
     },
     username: {
       type: String,
@@ -40,6 +47,13 @@ const thoughtsSchema = mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+thoughtsSchema.pre("save", function (next) {
+  this.createdAt = `${dayjs(this.createdAt).format(
+    "MMM DD, YYYY"
+  )} at ${dayjs().format("hh:mm a")}`;
+  next();
+});
 
 thoughtsSchema.virtual("reactionCount").get(function () {
   return this.reactions.length;
