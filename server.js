@@ -105,8 +105,22 @@ app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
   const newReaction = await Reaction.create({ username, reactionBody });
   thought.reactions.push(newReaction);
   thought.save();
-  
+
   res.json(thought);
+});
+
+app.delete("/api/thoughts/:thoughtId/reactions/:reactionId", async (req, res) => {
+  const { thoughtId, reactionId } = req.params;
+  const thought = await Thought.findOne({ _id: thoughtId });
+
+  const removeReaction = thought.reactions.filter((reaction) => {
+    return reaction.reactionId != reactionId;
+  });
+
+  thought.reactions = removeReaction;
+  thought.save();
+
+  return res.json(thought);
 });
 
 app.put("/api/thoughts/:id", async (req, res) => {
