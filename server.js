@@ -23,6 +23,12 @@ app.get("/api/users", async (req, res) => {
   return res.json(users);
 });
 
+app.get("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findOne({ _id: id });
+  return res.json(user);
+});
+
 app.post("/api/users", async (req, res) => {
   try {
     const { username, email } = req.body;
@@ -39,6 +45,7 @@ app.put("/api/users/:id", async (req, res) => {
   const updatedUser = await User.updateOne({ _id: id }, { $set: { username } });
   return res.json(updatedUser);
 });
+
 // User friends
 app.post("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
@@ -66,6 +73,12 @@ app.delete("/api/users/:userId/friends/:friendId", async (req, res) => {
 app.get("/api/thoughts", async (req, res) => {
   const thoughts = await Thought.find();
   return res.json(thoughts);
+});
+
+app.get("/api/thoughts/:id", async (req, res) => {
+  const { id } = req.params;
+  const singleThought = await Thought.find({ _id: id });
+  return res.json(singleThought);
 });
 
 //==================================================================================================================================================
