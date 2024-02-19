@@ -46,6 +46,20 @@ app.put("/api/users/:id", async (req, res) => {
   return res.json(updatedUser);
 });
 
+app.delete("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.deleteOne({ _id: id });
+    const thoughts = await Thought.deleteMany({ username: user.username });
+
+    return res.json({ message: "removed user and associated thoughts" });
+    
+  } catch (e) {
+    res.status(200).json(e.message);
+  }
+});
+
 // User friends
 app.post("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
@@ -97,32 +111,6 @@ app.post("/api/thoughts/:userId", async (req, res) => {
   return res.json({ newThought });
 });
 
-app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
-  const { thoughtId } = req.params;
-  const { reactionBody, username } = req.body;
-  const thought = await Thought.findOne({ _id: thoughtId });
-
-  const newReaction = await Reaction.create({ username, reactionBody });
-  thought.reactions.push(newReaction);
-  thought.save();
-
-  res.json(thought);
-});
-
-app.delete("/api/thoughts/:thoughtId/reactions/:reactionId", async (req, res) => {
-  const { thoughtId, reactionId } = req.params;
-  const thought = await Thought.findOne({ _id: thoughtId });
-
-  const removeReaction = thought.reactions.filter((reaction) => {
-    return reaction.reactionId != reactionId;
-  });
-
-  thought.reactions = removeReaction;
-  thought.save();
-
-  return res.json(thought);
-});
-
 app.put("/api/thoughts/:id", async (req, res) => {
   const { id } = req.params;
   const { thoughtText } = req.body;
@@ -144,6 +132,36 @@ app.delete("/api/users/:userId/thoughts/:thoughtId", async (req, res) => {
   user.save();
 
   return res.json(user);
+});
+
+// Reactions to Thoughts
+app.delete(
+  "/api/thoughts/:thoughtId/reactions/:reactionId",
+  async (req, res) => {
+    const { thoughtId, reactionId } = req.params;
+    const thought = await Thought.findOne({ _id: thoughtId });
+
+    const removeReaction = thought.reactions.filter((reaction) => {
+      return reaction.reactionId != reactionId;
+    });
+
+    thought.reactions = removeReaction;
+    thought.save();
+
+    return res.json(thought);
+  }
+);
+
+app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
+  const { thoughtId } = req.params;
+  const { reactionBody, username } = req.body;
+  const thought = await Thought.findOne({ _id: thoughtId });
+
+  const newReaction = await Reaction.create({ username, reactionBody });
+  thought.reactions.push(newReaction);
+  thought.save();
+
+  res.json(thought);
 });
 
 //==================================================================================================================================================
