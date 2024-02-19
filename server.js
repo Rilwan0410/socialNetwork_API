@@ -3,7 +3,7 @@ const app = express();
 const PORT = 5000;
 const db = require("./db/connection");
 const User = require("./models/User");
-const Thought = require("./models/Thoughts");
+const { Thought, Reaction } = require("./models/Thoughts");
 //==================================================================================================================================================
 
 app.use(express.urlencoded({ extended: false }));
@@ -95,6 +95,18 @@ app.post("/api/thoughts/:userId", async (req, res) => {
   user.thoughts.push(newThought._id);
   user.save();
   return res.json({ newThought });
+});
+
+app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
+  const { thoughtId } = req.params;
+  const { reactionBody, username } = req.body;
+  const thought = await Thought.findOne({ _id: thoughtId });
+
+  const newReaction = await Reaction.create({ username, reactionBody });
+  thought.reactions.push(newReaction);
+  thought.save();
+  
+  res.json(thought);
 });
 
 app.put("/api/thoughts/:id", async (req, res) => {
