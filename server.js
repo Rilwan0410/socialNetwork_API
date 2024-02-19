@@ -16,13 +16,13 @@ app.get("/", async (req, res) => {
   return res.send("<h1>Hello World</h1>");
 });
 
+// Users
 app.get("/api/users", async (req, res) => {
   const users = await User.find().populate("friends");
   console.log(users);
   return res.json(users);
 });
 
-// Users
 app.post("/api/users", async (req, res) => {
   try {
     const { username, email } = req.body;
@@ -33,12 +33,12 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
-app.post("/api/users/:id", async (req, res) => {
+app.put("/api/users/:id", async (req, res) => {
   const { id } = req.params;
-  const users = await User.findOne({ _id: id }).populate("thoughts");
-  return res.json(users);
+  const { username } = req.body;
+  const updatedUser = await User.updateOne({ _id: id }, { $set: { username } });
+  return res.json(updatedUser);
 });
-
 // User friends
 app.post("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
