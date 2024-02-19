@@ -25,7 +25,7 @@ app.get("/api/users", async (req, res) => {
 
 app.get("/api/users/:id", async (req, res) => {
   const { id } = req.params;
-  const user = await User.findOne({ _id: id })
+  const user = await User.findOne({ _id: id });
   return res.json(user);
 });
 
@@ -105,6 +105,19 @@ app.put("/api/thoughts/:id", async (req, res) => {
     { $set: { thoughtText } }
   );
   return res.json(updatedThought);
+});
+
+app.delete("/api/users/:userId/thoughts/:thoughtId", async (req, res) => {
+  const { userId, thoughtId } = req.params;
+
+  const user = await User.findOne({ _id: userId });
+  const removeThought = user.thoughts.filter((id) => {
+    return id != thoughtId;
+  });
+  user.thoughts = removeThought;
+  user.save();
+
+  return res.json(user);
 });
 
 //==================================================================================================================================================
