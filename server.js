@@ -25,7 +25,7 @@ app.get("/api/users", async (req, res) => {
 
 app.get("/api/users/:id", async (req, res) => {
   const { id } = req.params;
-  const user = await User.findOne({ _id: id });
+  const user = await User.findOne({ _id: id })
   return res.json(user);
 });
 
@@ -94,7 +94,17 @@ app.post("/api/thoughts/:userId", async (req, res) => {
 
   user.thoughts.push(newThought._id);
   user.save();
-  return res.json({ user, newThought });
+  return res.json({ newThought });
+});
+
+app.put("/api/thoughts/:id", async (req, res) => {
+  const { id } = req.params;
+  const { thoughtText } = req.body;
+  const updatedThought = await Thought.updateOne(
+    { _id: id },
+    { $set: { thoughtText } }
+  );
+  return res.json(updatedThought);
 });
 
 //==================================================================================================================================================
