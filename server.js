@@ -9,7 +9,6 @@ const { Thought, Reaction } = require("./models/Thoughts");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-
 // Users
 app.get("/api/users", async (req, res) => {
   const users = await User.find().populate("friends");
@@ -36,7 +35,12 @@ app.post("/api/users", async (req, res) => {
 app.put("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   const { username } = req.body;
+  const user = await User.findOne({ _id: id });
   const updatedUser = await User.updateOne({ _id: id }, { $set: { username } });
+  const updatedThought = await Thought.updateMany(
+    { username: user.username },
+    { $set: { username } }
+  );
   return res.json(updatedUser);
 });
 
@@ -44,11 +48,11 @@ app.delete("/api/users/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const user = await User.deleteOne({ _id: id });
-    const thoughts = await Thought.deleteMany({ username: user.username });
+    const user = await User.findOne({ _id: id });
+    const deleteUser = await User.deleteOne({ _id: id });
+    await Thought.deleteMany({ username: user.username });
 
     return res.json({ message: "removed user and associated thoughts" });
-    
   } catch (e) {
     res.status(200).json(e.message);
   }
@@ -59,22 +63,29 @@ app.post("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
 
   const user = await User.findOne({ _id: userId });
-  user.friends.push(friendId);
-  user.save();
-  return res.json(user);
+  if (user.friends.includes(friendId)) {
+    return res.json({ message: "friend already exists" });
+  } else {
+    user.friends.push(friendId);
+    user.save();
+    return res.json(user);
+  }
 });
 
 app.delete("/api/users/:userId/friends/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
+  try {
+    const user = await User.findOne({ _id: userId });
+    const removeFriend = user.friends.filter((id) => {
+      return id != friendId;
+    });
+    user.friends = removeFriend;
+    user.save();
 
-  const user = await User.findOne({ _id: userId });
-  const removeFriend = user.friends.filter((id) => {
-    return id != friendId;
-  });
-  user.friends = removeFriend;
-  user.save();
-
-  return res.json(user);
+    return res.json({ message: "friend has been deleted", user });
+  } catch (e) {
+    return res.status(200).json(e.message);
+  }
 });
 
 // Thoughts
@@ -115,31 +126,33 @@ app.put("/api/thoughts/:id", async (req, res) => {
   return res.json(updatedThought);
 });
 
-app.delete("/api/thoughts/:thoughtId/users/:userId", async (req, res) => {
+app.delete("/api/thoughts/:thoughtId", async (req, res) => {
   const { userId, thoughtId } = req.params;
 
-  const user = await User.findOne({ _id: userId });
+  const thought = await Thought.findOne({ _id: thoughtId });
+  const user = await User.findOne({ username: thought.username });
   const removeThought = user.thoughts.filter((id) => {
     return id != thoughtId;
   });
   user.thoughts = removeThought;
   user.save();
+  await thought.deleteOne({ _id: thoughtId });
 
   return res.json(user);
 });
 
 // Reactions to Thoughts
 app.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
-    const { thoughtId } = req.params;
-    const { reactionBody, username } = req.body;
-    const thought = await Thought.findOne({ _id: thoughtId });
-  
-    const newReaction = await Reaction.create({ username, reactionBody });
-    thought.reactions.push(newReaction);
-    thought.save();
-  
-    res.json(thought);
-  }); 
+  const { thoughtId } = req.params;
+  const { reactionBody, username } = req.body;
+  const thought = await Thought.findOne({ _id: thoughtId });
+
+  const newReaction = await Reaction.create({ username, reactionBody });
+  thought.reactions.push(newReaction);
+  thought.save();
+
+  res.json(thought);
+});
 
 app.delete(
   "/api/thoughts/:thoughtId/reactions/:reactionId",
@@ -157,7 +170,6 @@ app.delete(
     return res.json(thought);
   }
 );
-
 
 //==================================================================================================================================================
 app.listen(PORT, () => {
