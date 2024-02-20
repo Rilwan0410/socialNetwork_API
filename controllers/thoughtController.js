@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const { Thought, Reaction } = require("../models/Thoughts");
 
+
 async function getAllThoughts(req, res) {
   const thoughts = await Thought.find();
   return res.json(thoughts);

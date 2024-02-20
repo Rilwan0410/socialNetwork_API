@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const userSchema = mongoose.Schema(
   {
     username: {
@@ -22,8 +21,6 @@ const userSchema = mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-
-
 
 userSchema.virtual("friendCount").get(function () {
   return this.friends.length;

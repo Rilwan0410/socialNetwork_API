@@ -10,5 +10,5 @@ npm start
 
 Link to Github repository: https://github.com/Rilwan0410/socialNetwork_API    
 
-Link to Video Walkthrough:  
+Link to Video Walkthrough: https://watch.screencastify.com/v/XPMFk1hvZ5DGLkyohT3H  
 

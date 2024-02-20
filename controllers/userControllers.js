@@ -1,9 +1,9 @@
 const User = require("../models/User");
 const { Thought, Reaction } = require("../models/Thoughts");
+const dayjs = require("dayjs");
 
 async function getAllUsers(req, res) {
   const users = await User.find().populate("friends");
-  console.log(users);
   return res.json(users);
 }
 
